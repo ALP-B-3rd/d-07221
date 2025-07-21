@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta property="og:title" content="Stylish Calculator" />
+  <meta property="og:description" content="Cute & advanced web calculator with basic and scientific modes, pastel theme & smooth UI." />
+  <meta property="og:image" content="https://example.com/preview.png" />
+  <meta property="og:url" content="https://example.com/calculator.html" />
+  <meta property="og:type" content="website" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stylish Calculator</title>
+  <style>
+    :root {
+      --display-bg: rgba(30,33,39,0.8);
+      --btn-bg: rgba(59,63,71,0.8);
+      --btn-hover: rgba(78,83,93,0.8);
+      --btn-accent: #61dafb;
+      --text-color: #ffffff;
+      --accent-text: #000000;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fad0c4, #ff9a9e);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .calculator {
+      background: var(--display-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      width: 360px;
+      padding: 20px;
+    }
+    .mode-switch {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .mode-switch button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      background: var(--btn-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .mode-switch .active { background: var(--btn-accent); color: var(--accent-text); }
+    .display {
+      background: var(--display-bg);
+      color: var(--text-color);
+      font-size: 2rem;
+      text-align: right;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      min-height: 3rem;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    button.calc-btn {
+      padding: 20px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--btn-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button.calc-btn:hover { background: var(--btn-hover); }
+    button.calc-btn:active { transform: scale(0.95); }
+    .btn-accent { background: var(--btn-accent); color: var(--accent-text); }
+    .span-two { grid-column: span 2; }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="mode-switch">
+      <button id="basic-mode" class="active">Basic</button>
+      <button id="scientific-mode">Scientific</button>
+    </div>
+    <div id="display" class="display"></div>
+    <div id="buttons-basic" class="buttons">
+      <button data-action="clear" class="calc-btn btn-accent span-two">C</button>
+      <button data-action="del" class="calc-btn btn-accent">DEL</button>
+      <button data-op="/" class="calc-btn">÷</button>
+      <button data-num="7" class="calc-btn">7</button>
+      <button data-num="8" class="calc-btn">8</button>
+      <button data-num="9" class="calc-btn">9</button>
+      <button data-op="*" class="calc-btn">×</button>
+      <button data-num="4" class="calc-btn">4</button>
+      <button data-num="5" class="calc-btn">5</button>
+      <button data-num="6" class="calc-btn">6</button>
+      <button data-op="-" class="calc-btn">−</button>
+      <button data-num="1" class="calc-btn">1</button>
+      <button data-num="2" class="calc-btn">2</button>
+      <button data-num="3" class="calc-btn">3</button>
+      <button data-op="+" class="calc-btn">+</button>
+      <button data-num="0" class="calc-btn span-two">0</button>
+      <button data-num="." class="calc-btn">.</button>
+      <button data-action="equals" class="calc-btn btn-accent">=</button>
+    </div>
+    <div id="buttons-scientific" class="buttons" style="display:none; margin-top:12px;">
+      <button data-func="sin" class="calc-btn">sin</button>
+      <button data-func="cos" class="calc-btn">cos</button>
+      <button data-func="tan" class="calc-btn">tan</button>
+      <button data-func="sqrt" class="calc-btn">√</button>
+      <button data-func="ln" class="calc-btn">ln</button>
+      <button data-op="^" class="calc-btn">^</button>
+      <button data-func="log" class="calc-btn">log</button>
+      <button data-func="exp" class="calc-btn">eˣ</button>
+    </div>
+  </div>
+  <script>
+    const display = document.getElementById('display');
+    let expression = '';
+    let mode = 'basic';
+
+    const basicBtn = document.getElementById('basic-mode');
+    const sciBtn = document.getElementById('scientific-mode');
+    const basicPanel = document.getElementById('buttons-basic');
+    const sciPanel = document.getElementById('buttons-scientific');
+
+    basicBtn.addEventListener('click', () => switchMode('basic'));
+    sciBtn.addEventListener('click', () => switchMode('scientific'));
+
+    function switchMode(m) {
+      mode = m;
+      if (m === 'basic') {
+        basicPanel.style.display = 'grid';
+        sciPanel.style.display = 'none';
+        basicBtn.classList.add('active'); sciBtn.classList.remove('active');
+      } else {
+        basicPanel.style.display = 'grid'; sciPanel.style.display = 'grid';
+        basicBtn.classList.remove('active'); sciBtn.classList.add('active');
+      }
+    }
+
+    function updateDisplay() { display.textContent = expression || '0'; }
+
+    document.querySelectorAll('[data-num], [data-op]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const num = btn.getAttribute('data-num');
+        const op = btn.getAttribute('data-op');
+        if (num != null) {
+          if (num === '.' && expression.slice(-1) === '.') return;
+          expression += num;
+        } else if (op != null) {
+          if (!expression || /[+\-*/.^]$/.test(expression)) return;
+          expression += (op === '^' ? '**' : op);
+        }
+        updateDisplay();
+      });
+    });
+
+    document.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const act = btn.getAttribute('data-action');
+        if (act === 'clear') expression = '';
+        else if (act === 'del') expression = expression.slice(0, -1);
+        else if (act === 'equals') evaluate();
+        updateDisplay();
+      });
+    });
+
+    document.querySelectorAll('[data-func]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const fn = btn.getAttribute('data-func');
+        try {
+          const val = parseFloat(expression) || 0;
+          let res;
+          switch(fn) {
+            case 'sin': res = Math.sin(val); break;
+            case 'cos': res = Math.cos(val); break;
+            case 'tan': res = Math.tan(val); break;
+            case 'sqrt': res = Math.sqrt(val); break;
+            case 'ln': res = Math.log(val); break;
+            case 'log': res = Math.log10(val); break;
+            case 'exp': res = Math.exp(val); break;
+          }
+          expression = res.toString();
+        } catch { expression = 'Error'; }
+        updateDisplay();
+      });
+    });
+
+    function evaluate() {
+      if (!expression || /[+\-*/.^]$/.test(expression)) return;
+      try { expression = eval(expression).toString(); }
+      catch { expression = 'Error'; }
+    }
+
+    window.addEventListener('keydown', e => {
+      if (mode === 'basic') {
+        if ((e.key >= '0' && e.key <= '9') || e.key === '.') document.querySelector(`[data-num='${e.key}']`)?.click();
+        else if (['+','-','*','/'].includes(e.key)) document.querySelector(`[data-op='${e.key}']`)?.click();
+        else if (e.key === 'Enter' || e.key === '=') document.querySelector(`[data-action='equals']`)?.click();
+        else if (e.key === 'Backspace') document.querySelector(`[data-action='del']`)?.click();
+        else if (e.key.toLowerCase() === 'c') document.querySelector(`[data-action='clear']`)?.click();
+      }
+    });
+
+    updateDisplay();
+  </script>
+</body>
+</html>
